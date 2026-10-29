@@ -34,7 +34,7 @@ import java.time.Instant
 
 /**
  * Renders every screen with sample data, on the JVM (Paparazzi, no emulator).
- *   ./gradlew :app:recordPaparazziDebug   -> app/src/test/snapshots/images/*.png
+ *   ./gradlew :app:recordPaparazziDebug   -> PNGs in app/src/test/snapshots/images
  * CI publishes them on the `screenshots` branch.
  */
 class ScreenshotTest {
