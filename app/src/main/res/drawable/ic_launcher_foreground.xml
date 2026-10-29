@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A case with a padlock: the PharmaBox. Drawn inside the 66dp safe zone of the 108dp canvas. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- handle -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#FFFFFFFF"
+        android:strokeWidth="4"
+        android:pathData="M44,40 L44,35 Q44,32 47,32 L61,32 Q64,32 64,35 L64,40" />
+    <!-- case -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M32,40 L76,40 Q80,40 80,44 L80,72 Q80,76 76,76 L32,76 Q28,76 28,72 L28,44 Q28,40 32,40 Z" />
+    <!-- padlock -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#FF0E5E55"
+        android:strokeWidth="3"
+        android:pathData="M49,56 L49,52 Q49,47 54,47 Q59,47 59,52 L59,56" />
+    <path
+        android:fillColor="#FF0E5E55"
+        android:pathData="M46,56 L62,56 L62,68 L46,68 Z" />
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M53,60 L55,60 L55,65 L53,65 Z" />
+</vector>
