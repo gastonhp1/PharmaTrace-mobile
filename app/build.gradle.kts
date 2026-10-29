@@ -3,6 +3,8 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.kotlin.serialization)
+    // Screenshot tests: renders Compose screens on the JVM, no emulator (src/test/.../ScreenshotTest.kt).
+    alias(libs.plugins.paparazzi)
 }
 
 android {

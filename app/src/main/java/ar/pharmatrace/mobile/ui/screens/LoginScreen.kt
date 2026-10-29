@@ -32,11 +32,17 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import ar.pharmatrace.mobile.ui.LoginState
 import ar.pharmatrace.mobile.ui.LoginViewModel
 
 @Composable
 fun LoginScreen(vm: LoginViewModel) {
     val s by vm.state.collectAsStateWithLifecycle()
+    LoginContent(s, onChange = vm::update, onLogin = vm::login)
+}
+
+@Composable
+fun LoginContent(s: LoginState, onChange: ((LoginState) -> LoginState) -> Unit, onLogin: () -> Unit) {
     Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
         Column(
             modifier = Modifier
@@ -58,7 +64,7 @@ fun LoginScreen(vm: LoginViewModel) {
             Spacer(Modifier.height(8.dp))
             OutlinedTextField(
                 value = s.apiUrl,
-                onValueChange = { v -> vm.update { it.copy(apiUrl = v) } },
+                onValueChange = { v -> onChange { it.copy(apiUrl = v) } },
                 label = { Text("Servidor") },
                 placeholder = { Text("https://api.pharmatrace.example") },
                 singleLine = true,
@@ -67,7 +73,7 @@ fun LoginScreen(vm: LoginViewModel) {
             )
             OutlinedTextField(
                 value = s.username,
-                onValueChange = { v -> vm.update { it.copy(username = v) } },
+                onValueChange = { v -> onChange { it.copy(username = v) } },
                 label = { Text("Usuario") },
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
@@ -75,17 +81,17 @@ fun LoginScreen(vm: LoginViewModel) {
             )
             OutlinedTextField(
                 value = s.password,
-                onValueChange = { v -> vm.update { it.copy(password = v) } },
+                onValueChange = { v -> onChange { it.copy(password = v) } },
                 label = { Text("Contraseña") },
                 singleLine = true,
                 visualTransformation = PasswordVisualTransformation(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Done),
-                keyboardActions = KeyboardActions(onDone = { vm.login() }),
+                keyboardActions = KeyboardActions(onDone = { onLogin() }),
                 modifier = Modifier.fillMaxWidth(),
             )
             s.error?.let { Text(it, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodyMedium) }
             Button(
-                onClick = vm::login,
+                onClick = onLogin,
                 enabled = !s.busy && s.username.isNotBlank() && s.password.isNotEmpty(),
                 modifier = Modifier.fillMaxWidth().height(48.dp),
             ) {

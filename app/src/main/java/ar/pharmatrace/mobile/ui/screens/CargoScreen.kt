@@ -48,10 +48,15 @@ private fun formatTime(iso: String?): String = iso?.let { runCatching { TIME.for
 @Composable
 fun CargoScreen(cargoId: String, vm: CargoViewModel, onBack: () -> Unit) {
     val state by vm.state.collectAsStateWithLifecycle()
+    CargoContent(cargoId, state, onRefresh = vm::refresh, onBack = onBack)
+}
+
+@Composable
+fun CargoContent(cargoId: String, state: CargoState, onRefresh: () -> Unit, onBack: () -> Unit) {
     ScreenScaffold(
         title = "Cargamento $cargoId",
         onBack = onBack,
-        actions = { IconButton(onClick = vm::refresh) { Icon(Icons.Filled.Refresh, contentDescription = "Actualizar") } },
+        actions = { IconButton(onClick = onRefresh) { Icon(Icons.Filled.Refresh, contentDescription = "Actualizar") } },
     ) { padding ->
         ScreenColumn(padding) {
             when (val s = state) {

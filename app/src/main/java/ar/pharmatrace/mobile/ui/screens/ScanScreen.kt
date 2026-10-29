@@ -56,17 +56,36 @@ fun ScanScreen(onQr: (String) -> Unit, onBack: () -> Unit) {
     val launcher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted = it }
     LaunchedEffect(Unit) { if (!granted) launcher.launch(Manifest.permission.CAMERA) }
 
+    ScanContent(
+        granted = granted,
+        notABox = notABox,
+        onRequestPermission = { launcher.launch(Manifest.permission.CAMERA) },
+        onBack = onBack,
+    ) {
+        QrScanner(
+            onCode = { text ->
+                // Anything that is not a PharmaBox QR (a medicine box, a URL) is ignored.
+                val isBox = BoxProtocol.parseQr(text) != null
+                if (isBox) onQr(text.trim()) else notABox = true
+                isBox
+            },
+        )
+    }
+}
+
+/** The screen around the camera; [camera] is the live preview (a placeholder in screenshot tests). */
+@Composable
+fun ScanContent(
+    granted: Boolean,
+    notABox: Boolean,
+    onRequestPermission: () -> Unit,
+    onBack: () -> Unit,
+    camera: @Composable () -> Unit,
+) {
     ScreenScaffold(title = "Escanear la caja", onBack = onBack) { padding ->
         Box(Modifier.fillMaxSize().padding(padding)) {
             if (granted) {
-                QrScanner(
-                    onCode = { text ->
-                        // Anything that is not a PharmaBox QR (a medicine box, a URL) is ignored.
-                        val isBox = BoxProtocol.parseQr(text) != null
-                        if (isBox) onQr(text.trim()) else notABox = true
-                        isBox
-                    },
-                )
+                camera()
                 Box(
                     Modifier
                         .align(Alignment.Center)
@@ -91,7 +110,7 @@ fun ScanScreen(onQr: (String) -> Unit, onBack: () -> Unit) {
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
                     Text("Hace falta la cámara para leer el QR de la caja.", style = MaterialTheme.typography.bodyLarge)
-                    Button(onClick = { launcher.launch(Manifest.permission.CAMERA) }) { Text("Permitir cámara") }
+                    Button(onClick = onRequestPermission) { Text("Permitir cámara") }
                 }
             }
         }

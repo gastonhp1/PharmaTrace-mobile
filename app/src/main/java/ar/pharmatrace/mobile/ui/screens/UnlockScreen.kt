@@ -75,7 +75,32 @@ fun UnlockScreen(
     }
     LaunchedEffect(Unit) { if (state == UnlockState.Ready) proceed() }
 
-    ScreenScaffold(title = "Abrir ${vm.challenge?.deviceId ?: "caja"}", onBack = onBack) { padding ->
+    UnlockContent(
+        deviceId = vm.challenge?.deviceId,
+        state = state,
+        blocker = blocker,
+        onRetry = proceed,
+        onScanAgain = onScanAgain,
+        onCargo = onCargo,
+        onSessionExpired = onSessionExpired,
+        onBack = onBack,
+    )
+}
+
+/** The screen without Android plumbing, so it can be rendered with sample data (screenshot tests). */
+@Composable
+fun UnlockContent(
+    deviceId: String?,
+    state: UnlockState,
+    blocker: String?,
+    onRetry: () -> Unit,
+    onScanAgain: () -> Unit,
+    onCargo: (String) -> Unit,
+    onSessionExpired: () -> Unit,
+    onBack: () -> Unit,
+) {
+    val proceed = onRetry
+    ScreenScaffold(title = "Abrir ${deviceId ?: "caja"}", onBack = onBack) { padding ->
         ScreenColumn(padding) {
             Card {
                 Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
