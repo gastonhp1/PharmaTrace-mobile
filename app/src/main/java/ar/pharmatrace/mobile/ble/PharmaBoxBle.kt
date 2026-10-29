@@ -8,6 +8,7 @@ import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.BluetoothGattDescriptor
 import android.bluetooth.BluetoothManager
 import android.bluetooth.BluetoothProfile
+import android.bluetooth.BluetoothStatusCodes
 import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanFilter
 import android.bluetooth.le.ScanResult
@@ -234,7 +235,7 @@ class PharmaBoxBle(private val context: Context) {
             val cccd = status.getDescriptor(CCCD) ?: return // without CCCD we fall back to reading
             pendingDescriptor = CompletableDeferred()
             val started = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                g.writeDescriptor(cccd, BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE) == BluetoothGatt.GATT_SUCCESS
+                g.writeDescriptor(cccd, BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE) == BluetoothStatusCodes.SUCCESS
             } else {
                 cccd.value = BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE
                 g.writeDescriptor(cccd)
@@ -249,7 +250,7 @@ class PharmaBoxBle(private val context: Context) {
             pendingWrite = CompletableDeferred()
             val type = BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT // with response: we want the ack
             val started = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                g.writeCharacteristic(c, token, type) == BluetoothGatt.GATT_SUCCESS
+                g.writeCharacteristic(c, token, type) == BluetoothStatusCodes.SUCCESS
             } else {
                 c.writeType = type
                 c.value = token
