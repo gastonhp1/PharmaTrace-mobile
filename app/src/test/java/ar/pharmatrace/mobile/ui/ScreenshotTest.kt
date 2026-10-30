@@ -56,6 +56,7 @@ class ScreenshotTest {
     )
     private val noop = {}
 
+    @Composable
     private fun unlock(state: UnlockState, blocker: String? = null) =
         UnlockContent("VAL-001", state, blocker, noop, noop, {}, noop, noop)
 
