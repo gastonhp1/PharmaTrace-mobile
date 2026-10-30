@@ -102,7 +102,7 @@ fun UnlockContent(
     val proceed = onRetry
     ScreenScaffold(title = "Abrir ${deviceId ?: "caja"}", onBack = onBack) { padding ->
         ScreenColumn(padding) {
-            Card {
+            Card(Modifier.fillMaxWidth()) {
                 Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     StepRow("Pedir autorización al servidor", stepStatus(state, 0))
                     StepRow("Buscar la caja por Bluetooth", stepStatus(state, 1))
@@ -180,7 +180,7 @@ private fun Outcome(
     body: String,
     actions: @Composable () -> Unit,
 ) {
-    Card {
+    Card(Modifier.fillMaxWidth()) {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Icon(icon, contentDescription = null, tint = color, modifier = Modifier.size(32.dp))

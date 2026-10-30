@@ -52,7 +52,7 @@ fun HomeScreen(session: Session, onOpenBox: () -> Unit, onCargo: (String) -> Uni
                 style = MaterialTheme.typography.titleMedium,
             )
 
-            Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)) {
+            Card(Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)) {
                 Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         Icon(Icons.Filled.LockOpen, contentDescription = null, modifier = Modifier.size(28.dp))
@@ -67,7 +67,7 @@ fun HomeScreen(session: Session, onOpenBox: () -> Unit, onCargo: (String) -> Uni
                 }
             }
 
-            Card {
+            Card(Modifier.fillMaxWidth()) {
                 Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         Icon(Icons.Filled.LocalShipping, contentDescription = null, modifier = Modifier.size(28.dp))

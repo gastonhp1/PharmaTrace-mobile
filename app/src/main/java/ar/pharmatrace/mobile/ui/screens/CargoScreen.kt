@@ -73,7 +73,7 @@ fun CargoContent(cargoId: String, state: CargoState, onRefresh: () -> Unit, onBa
 
 @Composable
 private fun CargoCard(c: Cargo) {
-    Card {
+    Card(Modifier.fillMaxWidth()) {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
             Text("Custodia", style = MaterialTheme.typography.titleMedium)
             LabeledRow("Estado", CargoStates.label(c.state))
@@ -95,7 +95,7 @@ private fun ColdChainCard(cc: ColdChainStatus) {
         Verdict.Compromised -> StatusBad
         Verdict.Monitoring, Verdict.Pending -> StatusWarn
     }
-    Card {
+    Card(Modifier.fillMaxWidth()) {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
                 Text("Cadena de frío", style = MaterialTheme.typography.titleMedium)
