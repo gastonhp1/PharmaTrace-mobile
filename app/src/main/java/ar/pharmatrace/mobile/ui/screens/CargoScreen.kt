@@ -93,11 +93,19 @@ private fun CargoLabel(c: Cargo) {
         chip = { StatusChip(CargoStates.label(c.state), tone) },
         facts = listOf(
             "En custodia de" to orgName(c.owner),
-            "Destino" to (if (c.pendingTo.isNotEmpty()) orgName(c.pendingTo) else "Sin despachar"),
+            "Destino" to destination(c),
             "Actualizado" to formatTime(c.updatedAt),
             "Lotes" to c.batchIds.size.toString(),
         ),
     )
+}
+
+/** Where the cargo is going, or why it is going nowhere. */
+private fun destination(c: Cargo): String = when {
+    c.pendingTo.isNotEmpty() -> orgName(c.pendingTo)
+    c.state == "DELIVERED" -> "Ya entregado"
+    c.state == "DISSOLVED" -> "Disuelto"
+    else -> "Sin despachar"
 }
 
 @Composable
