@@ -34,6 +34,14 @@ The box needs no internet and no user keys: only the backend's public key. The r
 | **Unlock** | Step by step: authorization → find the box → connect → send → answer of the box. A denial from the server says why and sends nothing to the box |
 | **Cargo** | Custody (state, owner, destination, batches) and cold chain: verdict, time out of range against the budget, last reading, events anchored in the ledger |
 
+## Versions
+
+- **v2** (this one): same visual identity as the web UI v2, a drug reference book (*vademécum*). Source Serif 4
+  and IBM Plex Sans bundled in the app (`res/font`, OFL license in `licenses/`), blue palette, record label for
+  the cargo and for the unlock outcome, thermometer with the policy range. The reason of a compromised verdict
+  is shown in Spanish. No changes to the protocol, the API or BLE.
+- **v1**: first version (commit `15647b9`).
+
 ## Design decisions
 
 - **The app never holds Fabric keys.** It talks to the custodial REST API with a per-user session (HS256, 8 h)

@@ -2,6 +2,7 @@ package ar.pharmatrace.mobile.ui.screens
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -11,14 +12,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
@@ -51,17 +50,21 @@ fun LoginContent(s: LoginState, onChange: ((LoginState) -> LoginState) -> Unit, 
                 .verticalScroll(rememberScrollState())
                 .padding(24.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Spacer(Modifier.height(32.dp))
-            Icon(Icons.Filled.Lock, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(48.dp))
-            Text("PharmaTrace", style = MaterialTheme.typography.headlineMedium)
-            Text(
-                "Ingresá con el usuario de tu organización",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
+            Spacer(Modifier.height(24.dp))
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                BrandMark(48.dp)
+                Column {
+                    Text("PharmaTrace", style = MaterialTheme.typography.headlineMedium)
+                    Text(
+                        "Vademécum de trazabilidad",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
             Spacer(Modifier.height(8.dp))
+            Text("Ingresá con el usuario de tu organización.", style = MaterialTheme.typography.bodyLarge)
             OutlinedTextField(
                 value = s.apiUrl,
                 onValueChange = { v -> onChange { it.copy(apiUrl = v) } },
@@ -89,10 +92,11 @@ fun LoginContent(s: LoginState, onChange: ((LoginState) -> LoginState) -> Unit, 
                 keyboardActions = KeyboardActions(onDone = { onLogin() }),
                 modifier = Modifier.fillMaxWidth(),
             )
-            s.error?.let { Text(it, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodyMedium) }
+            s.error?.let { Notice(it, MaterialTheme.colorScheme.error) }
             Button(
                 onClick = onLogin,
                 enabled = !s.busy && s.username.isNotBlank() && s.password.isNotEmpty(),
+                shape = RoundedCornerShape(4.dp),
                 modifier = Modifier.fillMaxWidth().height(48.dp),
             ) {
                 if (s.busy) CircularProgressIndicator(Modifier.size(20.dp), strokeWidth = 2.dp) else Text("Ingresar")

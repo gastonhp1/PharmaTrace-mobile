@@ -32,6 +32,14 @@ presupuesto, última lectura, eventos anclados).
   GAP Device Name antes de escribir.
 - **`core/` es Kotlin puro**, testeado en la JVM contra un token firmado por el backend real.
 
+## Versiones
+
+- **v2** (esta): misma identidad visual que el UI web v2, un vademécum de trazabilidad. Tipografías Source
+  Serif 4 e IBM Plex Sans incluidas en la app (`res/font`, licencia OFL en `licenses/`), paleta azul, rótulo de
+  ficha para el cargamento y el resultado de la apertura, termómetro con el rango de la política. Los motivos
+  de un veredicto comprometido se muestran en español. Sin cambios en el protocolo, la API ni el BLE.
+- **v1**: primera versión (commit `15647b9`).
+
 ## Build
 
 ```bash

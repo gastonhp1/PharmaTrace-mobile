@@ -16,7 +16,7 @@ android {
         minSdk = 26
         targetSdk = 35
         versionCode = (System.getenv("GITHUB_RUN_NUMBER") ?: "1").toInt()
-        versionName = "0.1.0"
+        versionName = "2.0.0"
 
         // Default API for a debug build against the local network (`npm start` on the PC; the
         // emulator reaches the host at 10.0.2.2). Changeable on the login screen.
