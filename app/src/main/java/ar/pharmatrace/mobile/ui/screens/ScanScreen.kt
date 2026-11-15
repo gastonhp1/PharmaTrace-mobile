@@ -90,7 +90,7 @@ fun ScanContent(
                     Modifier
                         .align(Alignment.Center)
                         .size(240.dp)
-                        .border(3.dp, Color.White, RoundedCornerShape(16.dp)),
+                        .border(3.dp, Color.White, RoundedCornerShape(6.dp)),
                 )
                 Surface(
                     color = Color.Black.copy(alpha = 0.6f),

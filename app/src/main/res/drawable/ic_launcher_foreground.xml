@@ -18,11 +18,11 @@
     <!-- padlock -->
     <path
         android:fillColor="#00000000"
-        android:strokeColor="#FF0E5E55"
+        android:strokeColor="#FF1D4E89"
         android:strokeWidth="3"
         android:pathData="M49,56 L49,52 Q49,47 54,47 Q59,47 59,52 L59,56" />
     <path
-        android:fillColor="#FF0E5E55"
+        android:fillColor="#FF1D4E89"
         android:pathData="M46,56 L62,56 L62,68 L46,68 Z" />
     <path
         android:fillColor="#FFFFFFFF"

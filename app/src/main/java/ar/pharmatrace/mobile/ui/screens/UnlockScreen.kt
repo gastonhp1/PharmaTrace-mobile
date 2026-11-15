@@ -4,23 +4,28 @@ import android.bluetooth.BluetoothAdapter
 import android.content.Intent
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Block
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.ErrorOutline
 import androidx.compose.material.icons.filled.RadioButtonUnchecked
-import androidx.compose.material3.Button
-import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -41,8 +46,8 @@ import ar.pharmatrace.mobile.ui.UnlockState
 import ar.pharmatrace.mobile.ui.UnlockViewModel
 import ar.pharmatrace.mobile.ui.blePermissions
 import ar.pharmatrace.mobile.ui.hasAll
-import ar.pharmatrace.mobile.ui.theme.StatusBad
-import ar.pharmatrace.mobile.ui.theme.StatusOk
+import ar.pharmatrace.mobile.ui.theme.statusBad
+import ar.pharmatrace.mobile.ui.theme.statusOk
 
 @Composable
 fun UnlockScreen(
@@ -102,8 +107,9 @@ fun UnlockContent(
     val proceed = onRetry
     ScreenScaffold(title = "Abrir ${deviceId ?: "caja"}", onBack = onBack) { padding ->
         ScreenColumn(padding) {
-            Card(Modifier.fillMaxWidth()) {
-                Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Sheet {
+                SectionTitle("Apertura", hint = "El servidor autoriza y la caja verifica la firma antes de abrir.")
+                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     StepRow("Pedir autorización al servidor", stepStatus(state, 0))
                     StepRow("Buscar la caja por Bluetooth", stepStatus(state, 1))
                     StepRow("Conectar", stepStatus(state, 2))
@@ -113,29 +119,29 @@ fun UnlockContent(
             }
 
             blocker?.let {
-                Text(it, color = MaterialTheme.colorScheme.error)
-                Button(onClick = proceed, modifier = Modifier.fillMaxWidth()) { Text("Reintentar") }
+                Notice(it, MaterialTheme.colorScheme.error)
+                PrimaryButton("Reintentar", onClick = proceed)
             }
 
             when (val s = state) {
                 is UnlockState.Done -> ResultCard(s, onScanAgain, onCargo, onRetry = proceed)
                 is UnlockState.Denied -> Outcome(
                     icon = Icons.Filled.Block,
-                    color = StatusBad,
+                    color = statusBad(),
                     title = "No autorizado",
                     body = s.reason + "\n\nNo se envió nada a la caja.",
-                ) { OutlinedButton(onClick = onBack, modifier = Modifier.fillMaxWidth()) { Text("Volver") } }
+                ) { SecondaryButton("Volver", onClick = onBack) }
                 is UnlockState.Failed -> Outcome(
                     icon = Icons.Filled.ErrorOutline,
-                    color = StatusBad,
+                    color = statusBad(),
                     title = "No se pudo abrir",
                     body = s.message,
                 ) {
                     when {
-                        s.sessionExpired -> Button(onClick = onSessionExpired, modifier = Modifier.fillMaxWidth()) { Text("Ingresar de nuevo") }
+                        s.sessionExpired -> PrimaryButton("Ingresar de nuevo", onClick = onSessionExpired)
                         else -> {
-                            Button(onClick = proceed, modifier = Modifier.fillMaxWidth()) { Text("Reintentar") }
-                            OutlinedButton(onClick = onScanAgain, modifier = Modifier.fillMaxWidth()) { Text("Escanear otro QR") }
+                            PrimaryButton("Reintentar", onClick = proceed)
+                            SecondaryButton("Escanear otro QR", onClick = onScanAgain)
                         }
                     }
                 }
@@ -150,24 +156,24 @@ private fun ResultCard(s: UnlockState.Done, onScanAgain: () -> Unit, onCargo: (S
     val ok = s.result == UnlockResult.Ok
     Outcome(
         icon = if (ok) Icons.Filled.CheckCircle else Icons.Filled.ErrorOutline,
-        color = if (ok) StatusOk else StatusBad,
+        color = if (ok) statusOk() else statusBad(),
         title = if (ok) "Caja abierta" else "La caja rechazó el token",
         body = buildString {
             if (!ok) append(s.result.message)
             s.grant.cargoId?.let {
                 if (isNotEmpty()) append("\n\n")
-                append("Cargamento $it · ${CargoStates.label(s.grant.cargoState)}")
+                append("Cargamento $it, ${CargoStates.label(s.grant.cargoState).lowercase()}.")
             }
             if (ok) append("\n\nLa apertura queda registrada en el servidor y en la próxima lectura firmada de la caja.")
         },
     ) {
         s.grant.cargoId?.let { id ->
-            Button(onClick = { onCargo(id) }, modifier = Modifier.fillMaxWidth()) { Text("Ver cargamento") }
+            PrimaryButton("Ver el cargamento", onClick = { onCargo(id) })
         }
         when {
             ok -> Unit
-            s.result.retryWithNewQr -> OutlinedButton(onClick = onScanAgain, modifier = Modifier.fillMaxWidth()) { Text("Escanear un QR nuevo") }
-            else -> OutlinedButton(onClick = onRetry, modifier = Modifier.fillMaxWidth()) { Text("Reintentar") }
+            s.result.retryWithNewQr -> SecondaryButton("Escanear un QR nuevo", onClick = onScanAgain)
+            else -> SecondaryButton("Reintentar", onClick = onRetry)
         }
     }
 }
@@ -180,14 +186,23 @@ private fun Outcome(
     body: String,
     actions: @Composable () -> Unit,
 ) {
-    Card(Modifier.fillMaxWidth()) {
-        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Icon(icon, contentDescription = null, tint = color, modifier = Modifier.size(32.dp))
-                Text(title, style = MaterialTheme.typography.titleLarge)
+    // Same label as a record: the band carries the outcome's colour.
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = MaterialTheme.shapes.medium,
+        color = MaterialTheme.colorScheme.surface,
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+    ) {
+        Row(Modifier.height(IntrinsicSize.Min)) {
+            Box(Modifier.width(8.dp).fillMaxHeight().background(color))
+            Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Icon(icon, contentDescription = null, tint = color, modifier = Modifier.size(32.dp))
+                    Text(title, style = MaterialTheme.typography.headlineSmall)
+                }
+                if (body.isNotBlank()) Text(body, style = MaterialTheme.typography.bodyMedium)
+                actions()
             }
-            if (body.isNotBlank()) Text(body, style = MaterialTheme.typography.bodyMedium)
-            actions()
         }
     }
 }
@@ -221,8 +236,8 @@ private fun StepRow(label: String, status: StepStatus) {
     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
         when (status) {
             StepStatus.Active -> CircularProgressIndicator(Modifier.size(20.dp), strokeWidth = 2.dp)
-            StepStatus.Done -> Icon(Icons.Filled.CheckCircle, contentDescription = "Listo", tint = StatusOk, modifier = Modifier.size(20.dp))
-            StepStatus.Failed -> Icon(Icons.Filled.ErrorOutline, contentDescription = "Falló", tint = StatusBad, modifier = Modifier.size(20.dp))
+            StepStatus.Done -> Icon(Icons.Filled.CheckCircle, contentDescription = "Listo", tint = statusOk(), modifier = Modifier.size(20.dp))
+            StepStatus.Failed -> Icon(Icons.Filled.ErrorOutline, contentDescription = "Falló", tint = statusBad(), modifier = Modifier.size(20.dp))
             StepStatus.Pending -> Icon(
                 Icons.Filled.RadioButtonUnchecked,
                 contentDescription = null,

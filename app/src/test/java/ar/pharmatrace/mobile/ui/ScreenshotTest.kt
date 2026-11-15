@@ -112,7 +112,7 @@ class ScreenshotTest {
                 sampleCargo.copy(state = "DELIVERED", owner = "FarmaMSP", pendingTo = ""),
                 monitoring.copy(
                     verdict = "COMPROMISED",
-                    reason = "time out of range 2140 s > budget 1800 s",
+                    reason = "2140 seconds out of range, the policy allows 1800",
                     excursionSeconds = 2140,
                     closed = true,
                     pendingReadings = 0,
@@ -134,6 +134,12 @@ class ScreenshotTest {
     fun unlockOkDark() {
         paparazzi.unsafeUpdateConfig(DeviceConfig.PIXEL_5.copy(nightMode = NightMode.NIGHT))
         shot("13_unlock_ok_dark") { unlock(UnlockState.Done(UnlockResult.Ok, grant)) }
+    }
+
+    @Test
+    fun cargoDark() {
+        paparazzi.unsafeUpdateConfig(DeviceConfig.PIXEL_5.copy(nightMode = NightMode.NIGHT))
+        shot("14_cargo_dark") { CargoContent("CG-2026-0142", CargoState.Loaded(sampleCargo, monitoring), noop, noop) }
     }
 
     private val sampleCargo = Cargo(

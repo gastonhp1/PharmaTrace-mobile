@@ -42,3 +42,24 @@ fun formatDuration(seconds: Long): String {
         else -> "$s s"
     }
 }
+
+private val OUT_OF_RANGE = Regex("""^(\d+) seconds out of range, the policy allows (\d+)$""")
+private val SEAL_BROKEN = Regex("""^seal broken at (\d+)$""")
+
+/**
+ * Why the chaincode marked a cold chain as compromised (contract/coldchain.go), in Spanish.
+ * [formatInstant] renders a Unix time in seconds. Text that is not recognised is returned as it came.
+ */
+fun verdictReason(reason: String?, formatInstant: (Long) -> String = { it.toString() }): String? {
+    val text = reason?.trim().orEmpty()
+    if (text.isEmpty()) return null
+    OUT_OF_RANGE.matchEntire(text)?.let { m ->
+        val out = formatDuration(m.groupValues[1].toLong())
+        val allowed = formatDuration(m.groupValues[2].toLong())
+        return "$out fuera de rango; la política tolera $allowed"
+    }
+    SEAL_BROKEN.matchEntire(text)?.let { m ->
+        return "Precinto roto el ${formatInstant(m.groupValues[1].toLong())}"
+    }
+    return text
+}
