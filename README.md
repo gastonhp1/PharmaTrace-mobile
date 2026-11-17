@@ -1,97 +1,56 @@
 # PharmaTrace mobile
 
-[Español](README.es.md)
+[English](README.en.md)
 
-Android app (Kotlin, Jetpack Compose) for [Pharmatrace](https://github.com/gastonhp1/Pharmatrace), drug
-traceability on Hyperledger Fabric. Its first job is **opening the PharmaBox**, the cold-chain case built in
-[Pharmatrace-firmware](https://github.com/gastonhp1/Pharmatrace-firmware), from the person who is allowed to
-open it and nobody else.
+App Android (Kotlin, Jetpack Compose) de [Pharmatrace](https://github.com/gastonhp1/Pharmatrace), trazabilidad
+de medicamentos sobre Hyperledger Fabric. Su primer trabajo es **abrir la PharmaBox**, la valija de cadena de
+frío de [Pharmatrace-firmware](https://github.com/gastonhp1/Pharmatrace-firmware), solo por quien tiene permiso.
 
-```
- PharmaBox                       This app                           Pharmatrace API
-   button → nonce, e-paper QR       │                                   │
-   "PB1:<deviceId>:<nonce>"  ◄── scan (CameraX + ML Kit)                │
-                                    │── POST /api/box/unlock ──────────►│ who is it, which org?
-                                    │   Authorization: Bearer           │ box + cargo from the ledger
-                                    │◄────────── 106-byte token ────────│ policy, audit, P-256 signature
-                                    │ checks box + nonce locally        │
-   ◄─────── BLE write `unlock` ─────│                                   │
-   verifies offline, opens          │                                   │
-   ─────── BLE notify `status` ────►│ shows the result                  │
-```
+1. La caja muestra un QR `PB1:<deviceId>:<nonce>` al apretar su botón.
+2. La app lo escanea y le pide un token a la API (`POST /api/box/unlock`) con la sesión del usuario.
+3. El backend lee la caja y el cargamento del ledger, aplica la regla (el destinatario de un cargamento en
+   tránsito, no quien lo despachó; el regulador siempre…), audita y firma un token de 106 bytes.
+4. La app verifica que el token sea para esa caja y ese nonce, y lo escribe por BLE.
+5. La caja verifica la firma sin internet, abre y notifica el resultado.
 
-The box needs no internet and no user keys: only the backend's public key. The rule of who can open
-(the recipient of a cargo in transit, not the sender; the regulator always…) lives in one place, the backend
-([`iot/docs/BOX_UNLOCK.md`](https://github.com/gastonhp1/Pharmatrace/blob/main/iot/docs/BOX_UNLOCK.md)).
+La regla vive en un solo lugar, el backend:
+[`iot/docs/BOX_UNLOCK.md`](https://github.com/gastonhp1/Pharmatrace/blob/main/iot/docs/BOX_UNLOCK.md).
 
-## Screens
+## Pantallas
 
-| | |
-| --- | --- |
-| **Login** | Server URL, user and password of your org (users are created on the API with `scripts/user.js`) |
-| **Home** | Open a PharmaBox · look up a cargo |
-| **Scan** | Reads only PharmaBox QRs; anything else is ignored |
-| **Unlock** | Step by step: authorization → find the box → connect → send → answer of the box. A denial from the server says why and sends nothing to the box |
-| **Cargo** | Custody (state, owner, destination, batches) and cold chain: verdict, time out of range against the budget, last reading, events anchored in the ledger |
+Ingreso (servidor, usuario y contraseña de la organización), inicio, escaneo (solo acepta QRs de PharmaBox),
+apertura paso a paso, y cargamento: custodia, lotes y cadena de frío (veredicto, tiempo fuera de rango contra el
+presupuesto, última lectura, eventos anclados).
 
-## Versions
+## Decisiones
 
-- **v2** (this one): same visual identity as the web UI v2, a drug reference book (*vademécum*). Source Serif 4
-  and IBM Plex Sans bundled in the app (`res/font`, OFL license in `licenses/`), blue palette, record label for
-  the cargo and for the unlock outcome, thermometer with the policy range. The reason of a compromised verdict
-  is shown in Spanish. No changes to the protocol, the API or BLE.
-- **v1**: first version (commit `15647b9`).
+- **La app nunca tiene claves de Fabric**: usa la API custodial con una sesión por usuario, guardada cifrada con
+  una clave AES-GCM del Android Keystore y excluida de los backups.
+- **El token se revisa antes de mandarlo**: cada escritura rechazada gasta uno de los tres intentos de la caja.
+- **Operaciones BLE en serie y con timeout**; pide MTU 185 y si no, Android hace escritura larga.
+- **La caja correcta**: prefiere la que anuncia el `deviceId` como nombre; si no hay nombre, lo confirma con el
+  GAP Device Name antes de escribir.
+- **`core/` es Kotlin puro**, testeado en la JVM contra un token firmado por el backend real.
 
-## Design decisions
+## Versiones
 
-- **The app never holds Fabric keys.** It talks to the custodial REST API with a per-user session (HS256, 8 h)
-  stored encrypted with an Android Keystore AES-GCM key, excluded from backups.
-- **A token is checked before it is sent.** Every rejected write costs one of the box's three attempts per QR,
-  so the app verifies length, header, lifetime, box (`SHA-256(deviceId)[:8]`) and nonce against the QR it scanned.
-  The signature is the box's job.
-- **BLE operations are serialized and time-boxed** (Android allows one GATT operation in flight). MTU 185 is
-  requested; if refused, Android falls back to a long write.
-- **Finding the right box.** The box advertises its service only while its QR is valid. The app prefers the
-  one advertising the `deviceId` as its name; if names are not advertised it confirms with the GAP Device Name
-  after connecting, before writing anything.
-- **`core/` is plain Kotlin**: QR parsing, token checks and BLE result codes, tested on the JVM against a token
-  signed by the real backend.
+- **v2** (esta): misma identidad visual que el UI web v2, un vademécum de trazabilidad. Tipografías Source
+  Serif 4 e IBM Plex Sans incluidas en la app (`res/font`, licencia OFL en `licenses/`), paleta azul, rótulo de
+  ficha para el cargamento y el resultado de la apertura, termómetro con el rango de la política. Los motivos
+  de un veredicto comprometido se muestran en español. Sin cambios en el protocolo, la API ni el BLE.
+- **v1**: primera versión (commit `15647b9`).
 
 ## Build
 
-Android Studio Ladybug or newer, or the command line with JDK 17:
-
 ```bash
-./gradlew :core:test :app:testDebugUnitTest   # unit tests
-./gradlew :app:assembleDebug                  # app/build/outputs/apk/debug/
+./gradlew :core:test :app:testDebugUnitTest
+./gradlew :app:assembleDebug
 ```
 
-The debug build allows plain HTTP (to a backend on the LAN, `npm start` in `Pharmatrace/backend`) and
-defaults to `http://10.0.2.2:3001`, the host seen from the emulator. The release build is HTTPS-only.
-CI ([`android.yml`](.github/workflows/android.yml)) runs the tests and lint and publishes the debug APK as an
-artifact.
+El build debug permite HTTP (backend en la LAN) y apunta por defecto a `http://10.0.2.2:3001` (la PC vista desde
+el emulador). El release es solo HTTPS. El CI corre tests y lint y publica el APK debug como artefacto.
 
-To try it end to end, on the backend:
+## Estado
 
-```bash
-cd Pharmatrace/backend
-node scripts/unlock-key.js generate data/unlock-key.pem   # also prints include/unlock_key.h for the box
-node scripts/user.js add dario DistMSP
-# .env: SESSION_SECRET, UNLOCK_KEY_FILE=data/unlock-key.pem
-```
-
-## Status
-
-| | |
-| --- | --- |
-| Protocol logic (`core/`) | Tested on the JVM, including a token signed by the backend |
-| API client | Tested against MockWebServer |
-| BLE against a real PharmaBox | **Not tested**: the box firmware is not tested on hardware yet either |
-| Camera scanning | **Not tested on a device** |
-
-## Next
-
-- Batch operations from the phone (dispatch, receive, dispense) once the API moves its writes from the shared
-  API key to per-user sessions.
-- Scanning the GS1 DataMatrix of a medicine box to jump to its batch.
-- Push notifications when a cargo leaves its range.
+La lógica del protocolo y el cliente de la API están testeados. **BLE contra una PharmaBox real y el escaneo con
+cámara no se probaron en un dispositivo** (el firmware de la caja tampoco se probó en hardware todavía).
